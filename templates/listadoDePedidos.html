@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>listado de pedidos</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    </head>
+    <body>
+        <nav>
+            <a href="{{url_for('index')}}">Inicio</a>
+            <a href="{{url_for('productos')}}">Tienda</a>
+            <a href="{{url_for('listado')}}">Listado</a>
+            <a href="{{url_for('carrito')}}">Carrito</a>
+            <a href="{{url_for('login')}}">Login</a>
+        </nav>
+        <p>index</p>
+    </body>
+</html>
