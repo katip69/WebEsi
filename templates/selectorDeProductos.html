@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>selector de productos</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    </head>
+    <body>
+        <nav>
+            <a href="{{url_for('index')}}">Inicio</a>
+            <a href="{{url_for('productos')}}">Tienda</a>
+            <a href="{{url_for('listado')}}">Listado</a>
+            <a href="{{url_for('carrito')}}">Carrito</a>
+            <a href="{{url_for('login')}}">Login</a>
+        </nav>
+        <div id="contenedor">
+            <div id="producto">
+                <p>Nombre1</p>
+                <img src="./static/images/1.jpg" style="height: 80rem; width: 20rem;" >
+                <div id="compra">
+                    <p>Disponible</p>
+                    <button id="botonCompra" style="background-color: gray;"><img id="imgCompra" src="./static/images/carrito.png"></button>
+                </div>
+            </div>
+            <div id="producto">
+                <p>Nombre1</p>
+                <img src="./static/images/2.jpg" style="height: 80rem; width: 20rem;" >
+                <div id="compra">
+                    <p>Disponible</p>
+                    <button id="botonCompra" style="background-color: gray;"><img id="imgCompra" src="./static/images/carrito.png"></button>
+                </div>
+            </div>
+            <div id="producto">
+                <p>Nombre1</p>
+                <img src="./static/images/3.jpg" style="height: 80rem; width: 20rem;" >
+                <div id="compra">
+                    <p>Disponible</p>
+                    <button id="botonCompra" style="background-color: gray;"><img id="imgCompra" src="./static/images/carrito.png"></button>
+                </div>
+            </div>
+            <div id="producto">
+                <p>Nombre1</p>
+                <img src="./static/images/4.jpg" style="height: 80rem; width: 20rem;" >
+                <div id="compra">
+                    <p>Disponible</p>
+                    <button id="botonCompra" style="background-color: gray;"><img id="imgCompra" src="./static/images/carrito.png"></button>
+                </div>
+            </div>
+            <div id="producto">
+                <p>Nombre1</p>
+                <img src="./static/images/5.jpg" style="height: 80rem; width: 20rem;" >
+                <div id="compra">
+                    <p>Disponible</p>
+                    <button id="botonCompra" style="background-color: gray;"><img id="imgCompra" src="./static/images/carrito.png"></button>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

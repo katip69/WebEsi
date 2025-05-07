@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Index</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    </head>
+    <body>
+        <nav>
+            <a href="{{url_for('index')}}">Inicio</a>
+            <a href="{{url_for('productos')}}">Tienda</a>
+            <a href="{{url_for('listado')}}">Listado</a>
+            <a href="{{url_for('carrito')}}">Carrito</a>
+            <a href="{{url_for('login')}}">Login</a>
+        </nav>
+        <div id="main">
+            <h1>Bienvenidos a Flexi Steam</h1>
+            <p>
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
+                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
+                Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+
+                Cambiar a texto por api
+            </p>
+        </div>
+    </body>
+</html>

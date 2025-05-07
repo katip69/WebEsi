@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Carrito de compras</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    </head>
+    <body>
+        <nav>
+            <a href="{{url_for('index')}}">Inicio</a>
+            <a href="{{url_for('productos')}}">Tienda</a>
+            <a href="{{url_for('listado')}}">Listado</a>
+            <a href="{{url_for('carrito')}}">Carrito</a>
+            <a href="{{url_for('login')}}">Login</a>
+        </nav>
+        <div id="carro">
+            <p>Carrito</p>
+            <div id="compra">
+                <p>Mario 3</p>
+                <button id="botonCompra" style="background-color:red;"><img id="imgCompra" src="./static/images/papelera.png"></button>
+            </div>
+            <button id="confirmar">Confirmar compra</button>
+        </div>
+    </body>
+</html>
