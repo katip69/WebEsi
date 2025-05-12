@@ -1,7 +1,6 @@
 from flask import Flask, jsonify, request, redirect
 from flask import render_template
 from flask_mysqldb import MySQL
-from dotenv import load_dotenv
 import os
 
 app=Flask(__name__)
@@ -66,11 +65,27 @@ def registrar():
 
 @app.route("/productos")
 def productos():
-    return render_template('selectorDeProductos.html')
+    try:
+        cursor = conexion.connection.cursor()
+        cursor.execute("SELECT * FROM articulo")
+        articulos = cursor.fetchall()
+        cursor.close()
+        return render_template('selectorDeProductos.html', articulos=articulos)
+    except Exception as ex:
+        print(ex)
+        return jsonify({"error": "Error al obtener los productos"}), 500
 
 @app.route("/listado")
 def listado():
-    return render_template('listadoDePedidos.html')
+    try:
+        cursor = conexion.connection.cursor()
+        cursor.execute("SELECT * FROM pedido")
+        pedidos = cursor.fetchall()
+        cursor.close()
+        return render_template('listadoDePedidos.html', pedidos=pedidos)
+    except Exception as ex:
+        print(ex)
+        return jsonify({"error": "Error al obtener los pedidos"}), 500
 
 @app.route("/carrito")
 def carrito():

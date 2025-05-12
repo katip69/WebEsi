@@ -13,6 +13,13 @@
             <a href="{{url_for('carrito')}}">Carrito</a>
             <a href="{{url_for('login')}}">Login</a>
         </nav>
-        <p>index</p>
+        <div id="listado">
+            {% for pedido in pedidos %}
+            <div id="pedido">
+                <h1>{{pedido[0]}}</h1>
+                <p>{{pedido[1]}}</p>
+            </div>
+            {% endfor %}
+        </div>
     </body>
 </html>
