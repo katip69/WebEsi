@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, redirect
 from flask import render_template
 from flask_mysqldb import MySQL
 from dotenv import load_dotenv
@@ -21,7 +21,7 @@ conexion = MySQL(app)
 def index():
     return render_template('index.html')
 
-@app.route("/login")
+@app.route("/login", methods=["GET", "POST"])
 def login():
     return render_template('login.html')
 
@@ -49,6 +49,20 @@ def get_users():
     except Exception as ex:
         data['mensaje'] = 'error'
     return jsonify(data), 200
+
+@app.route("/api/registrar", methods=["POST"])
+def registrar():
+    # Obtener los datos del formulario
+    correo = request.form['email']
+    password = request.form['password']
+
+    # Insertarlos en la base de datos
+    cursor = conexion.connection.cursor()
+    cursor.execute("INSERT INTO usuario (nombre,email, password) VALUE ('miguel',%s, %s)", 
+                   (correo, password))
+    conexion.connection.commit()  # ¡No olvides confirmar los cambios!
+
+    return redirect("/login")
 
 @app.route("/productos")
 def productos():
