@@ -7,7 +7,8 @@ CREATE TABLE articulo (
 	nombre VARCHAR(20) NOT NULL,
 	precio_actual DOUBLE NOT NULL,
 	descripcion VARCHAR(100),
-	cantidad INT NOT NULL
+	cantidad INT NOT NULL,
+	imagen VARCHAR(255) -- imagen
 );
 
 CREATE TABLE usuario(
