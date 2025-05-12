@@ -13,7 +13,6 @@ app.config['MYSQL_USER'] = os.getenv("DB_USER")
 app.config['MYSQL_PASSWORD'] = os.getenv("DB_PASSWORD")
 app.config['MYSQL_DB'] = os.getenv("DB")
 
-print("here",app.config['MYSQL_USER'])
 
 conexion = MySQL(app)
 
