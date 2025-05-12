@@ -1,4 +1,4 @@
-from .app import db
+from .index import db
 from datetime import datetime
 
 class Usuario(db.Model):
