@@ -16,8 +16,10 @@
         <div id="contenedor">
             {% for producto in articulos %}
             <div id="producto">
-                <p>{{producto[1]}}</p>
+                <h1>{{producto[1]}}</h1>
                 <img src="{{ url_for('static', filename='images/' + producto[0]|string + '.jpg') }}" style="height: 80rem; width: 20rem;" >
+                <p>{{producto[2]}}€</p>
+                <p>{{producto[3]}}</p>
                 <div id="compra">
                     <p>Disponible</p>
                     <button id="botonCompra" style="background-color: gray;"><img id="imgCompra" src="./static/images/carrito.png"></button>

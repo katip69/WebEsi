@@ -16,8 +16,11 @@
         <div id="listado">
             {% for pedido in pedidos %}
             <div id="pedido">
-                <h1>{{pedido[0]}}</h1>
-                <p>{{pedido[1]}}</p>
+                <h1>ID del pedido: {{pedido[0]}}</h1>
+                <p>Usuario: {{pedido[1]}}</p>
+                <p>Fecha del pedido: {{pedido[2]}}</p>
+                <p>Fecha de la entrega: {{pedido[3]}}</p>
+                <p>Estado: {{pedido[4]}}</p>
             </div>
             {% endfor %}
         </div>
