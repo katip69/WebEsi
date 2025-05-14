@@ -4,8 +4,8 @@ USE tienda;
 
 CREATE TABLE articulo (
 	id INT AUTO_INCREMENT,	
-	nombre VARCHAR(20) NOT NULL,
-	precio_actual DOUBLE NOT NULL,
+	nombre VARCHAR(20),
+	precio_actual DOUBLE,
 	descripcion VARCHAR(100),
 	cantidad INT NOT NULL,
 	imagen VARCHAR(255), -- imagen
@@ -19,13 +19,15 @@ CREATE TABLE usuario(
 );
 
 CREATE TABLE carrito(
-	num_carrito INT PRIMARY KEY,
-	email_user VARCHAR(100),
-	id_articulo INT,
+	id_carrito INT NOT NULL,
+	id_articulo INT NOT NULL,
+	id_usuario VARCHAR(100) NOT NULL,
 	nombre_articulo VARCHAR(20) NOT NULL,
 	precio_articulo DOUBLE NOT NULL,
-	CONSTRAINT email_user_fk FOREIGN KEY(email_user) REFERENCES usuario(email),
-	CONSTRAINT articulo_fk FOREIGN KEY(id_articulo, nombre_articulo, precio_articulo) REFERENCES articulo(id, nombre, precio_actual)
+	cantidad INT NOT NULL,
+	CONSTRAINT usuario_fk FOREIGN KEY(id_usuario) REFERENCES usuario(email),
+	CONSTRAINT articulo_fk FOREIGN KEY(id_articulo, nombre_articulo, precio_articulo) REFERENCES articulo(id, nombre, precio_actual),
+	PRIMARY KEY (id_carrito, id_articulo)
 );
 
 CREATE TABLE pedido(
@@ -35,15 +37,6 @@ CREATE TABLE pedido(
 	fecha_entrega DATE NOT NULL,
 	estado ENUM('procesando', 'completado', 'cancelado') NOT NULL,
 	CONSTRAINT email_usuario FOREIGN KEY(email) REFERENCES usuario(email)
-);
-
-CREATE TABLE carrito_articulo(
-	id_carrito INT NOT NULL,
-	id_articulo INT NOT NULL,
-	cantidad INT NOT NULL,
-	CONSTRAINT id_c FOREIGN KEY(id_carrito) REFERENCES carrito(num_carrito) ON DELETE CASCADE,
-	CONSTRAINT id_a FOREIGN KEY(id_articulo) REFERENCES articulo(id),
-	PRIMARY KEY (id_carrito, id_articulo)
 );
 
 CREATE TABLE pedido_articulo(
