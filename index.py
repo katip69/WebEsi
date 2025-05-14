@@ -1,7 +1,9 @@
 from flask import Flask, jsonify, request, redirect
 from flask import render_template
 from flask_mysqldb import MySQL
+from flask_login import LoginManager,login_user,logout_user,login_required
 import os
+from models.UserModel import User
 
 app=Flask(__name__)
 
@@ -14,15 +16,44 @@ app.config['MYSQL_DB'] = os.getenv("DB")
 
 
 conexion = MySQL(app)
+app.secret_key = os.getenv("SECRET_KEY", "12345")
+login_manager_app=LoginManager(app)
+
+@login_manager_app.user_loader
+def load_user(id):
+    return User.get_by_id(conexion,id)
 
 @app.route("/")
 @app.route("/index")
 def index():
     return render_template('index.html')
 
+@app.route("/api/login",methods=['GET','POST'])
+def auth():
+    if request.method=='POST':
+        try:
+            cursor = conexion.connection.cursor()
+            print(request.form["email"])
+            email=request.form["email"]
+            cursor.execute("SELECT * FROM usuario WHERE email = (%s)", (email,))                        
+            auth = cursor.fetchone()
+            cursor.close()
+            if auth != None:
+                user=User(auth[0],auth[1],auth[2],2)
+                login_user(user)
+                return redirect("/login")
+            else:
+                return "No existe"
+        except Exception as ex:
+            return str(ex)
+    else:
+        return render_template('login.html')
+    
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    return render_template('login.html')
+    
+        return render_template('login.html')
 
 # Para la vista del usuario
 
@@ -54,11 +85,12 @@ def registrar():
     # Obtener los datos del formulario
     correo = request.form['email']
     password = request.form['password']
+    nombre = request.form['nombre']
 
     # Insertarlos en la base de datos
     cursor = conexion.connection.cursor()
-    cursor.execute("INSERT INTO usuario (nombre,email, password) VALUE ('miguel',%s, %s)", 
-                   (correo, password))
+    cursor.execute("INSERT INTO usuario (nombre,email, password) VALUE (%s,%s, %s)", 
+                   (nombre,correo, password))
     conexion.connection.commit()  # ¡No olvides confirmar los cambios!
 
     return redirect("/login")
@@ -93,4 +125,4 @@ def carrito():
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
