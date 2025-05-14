@@ -75,8 +75,15 @@ def listado():
 
 @app.route("/carrito")
 def carrito():
-    return render_template('carritoDeCompras.html')
-
+    try:
+        cursor = conexion.connection.cursor()
+        cursor.execute("SELECT * FROM carrito")
+        carrito = cursor.fetchall()
+        cursor.close()
+        return render_template('carritoDeCompras.html', carritos=carrito)
+    except Exception as ex:
+        print(ex)
+        return jsonify({"error": "Error al obtener el carrito"}), 500
 
 if __name__ == "__main__":
     app.run()

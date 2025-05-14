@@ -3,24 +3,29 @@ CREATE DATABASE tienda;
 USE tienda;
 
 CREATE TABLE articulo (
-	id INT AUTO_INCREMENT PRIMARY KEY,	
+	id INT AUTO_INCREMENT,	
 	nombre VARCHAR(20) NOT NULL,
 	precio_actual DOUBLE NOT NULL,
 	descripcion VARCHAR(100),
 	cantidad INT NOT NULL,
-	imagen VARCHAR(255) -- imagen
+	imagen VARCHAR(255), -- imagen
+	CONSTRAINT articulo_pk PRIMARY KEY(id, nombre, precio_actual)
 );
 
 CREATE TABLE usuario(
-        nombre VARCHAR(100) NOT NULL,
-        email VARCHAR(100) PRIMARY KEY,
-        password VARCHAR(100) NOT NULL
+	nombre VARCHAR(100) NOT NULL,
+	email VARCHAR(100) PRIMARY KEY,
+	password VARCHAR(100) NOT NULL
 );
 
 CREATE TABLE carrito(
 	num_carrito INT PRIMARY KEY,
-	email VARCHAR(100),
-	CONSTRAINT email_user FOREIGN KEY(email) REFERENCES usuario(email)
+	email_user VARCHAR(100),
+	id_articulo INT,
+	nombre_articulo VARCHAR(20) NOT NULL,
+	precio_articulo DOUBLE NOT NULL,
+	CONSTRAINT email_user_fk FOREIGN KEY(email_user) REFERENCES usuario(email),
+	CONSTRAINT articulo_fk FOREIGN KEY(id_articulo, nombre_articulo, precio_articulo) REFERENCES articulo(id, nombre, precio_actual)
 );
 
 CREATE TABLE pedido(

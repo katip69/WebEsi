@@ -14,11 +14,14 @@
             <a href="{{url_for('login')}}">Login</a>
         </nav>
         <div id="carro">
-            <p>Carrito</p>
+            {% for carrito in carritos %}
+            <h1>Carrito {{carrito[0]}}</h1>
             <div id="compra">
-                <p>Mario 3</p>
+                <p>Nombre: {{carrito[3]}}</p>
+                <p>Precio: {{carrito[4]}}</p>
                 <button id="botonCompra" style="background-color:red;"><img id="imgCompra" src="./static/images/papelera.png"></button>
             </div>
+            {% endfor %}
             <button id="confirmar">Confirmar compra</button>
         </div>
     </body>
