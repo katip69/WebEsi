@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, redirect
+from flask import Flask, jsonify, request, redirect,flash
 from flask import render_template
 from flask_mysqldb import MySQL
 from flask_login import LoginManager,login_user,logout_user,login_required
@@ -16,11 +16,12 @@ app.config['MYSQL_DB'] = os.getenv("DB")
 
 
 conexion = MySQL(app)
-app.secret_key = os.getenv("SECRET_KEY", "12345")
+app.secret_key = os.getenv("SECRET_KEY", "DB_PASSWORD")
 login_manager_app=LoginManager(app)
 
 @login_manager_app.user_loader
 def load_user(id):
+    print("load_user",id)
     return User.get_by_id(conexion,id)
 
 @app.route("/")
@@ -39,9 +40,13 @@ def auth():
             auth = cursor.fetchone()
             cursor.close()
             if auth != None:
-                user=User(auth[0],auth[1],auth[2],2)
-                login_user(user)
-                return redirect("/login")
+                user=User(auth[0],auth[1],auth[2],auth[3])
+                if user.password == request.form["password"]:
+                    login_user(user)
+                    return redirect("/login")
+                else:
+                    flash("Invalid password...")
+                    return redirect('/login')
             else:
                 return "No existe"
         except Exception as ex:
@@ -52,8 +57,13 @@ def auth():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    
-        return render_template('login.html')
+    return render_template('login.html')
+
+@app.route('/api/logout',methods=["GET","POST"])
+def logout():
+    logout_user()
+    print("deslogueo")
+    return redirect('/login')
 
 # Para la vista del usuario
 

@@ -7,6 +7,7 @@
     </head>
     <body>
         <nav>
+            <h1>Bienvenido, {{ current_user.email }}</h1>
             <a href="{{url_for('index')}}">Inicio</a>
             <a href="{{url_for('productos')}}">Tienda</a>
             <a href="{{url_for('listado')}}">Listado</a>
@@ -21,5 +22,8 @@
                 <button style="margin-top: 10px;" type="submit">registrar</button>
             </form>
         </div>
+        <form action="/api/logout" method="POST">
+            <button type="submit">Cerrar sesión</button>
+        </form>
     </body>
 </html>
