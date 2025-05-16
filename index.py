@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, redirect,flash
+from flask import Flask, jsonify, request, redirect,flash, session, url_for
 from flask import render_template
 from flask_mysqldb import MySQL
 from flask_login import LoginManager,login_user,logout_user,login_required
@@ -140,6 +140,45 @@ def carrito():
     except Exception as ex:
         print(ex)
         return jsonify({"error": "Error al obtener el carrito"}), 500
+
+@app.route("/agregar_carrito", methods=["POST"])
+def agregar_carrito():
+    try:
+        session['email'] = 'test@test'  # Es una prueba hasta que se pueda iniciar sesión
+        # Comprueba que el usuario ha iniciado sesión
+        if 'email' not in session:
+            return redirect(url_for('login'))
+        
+        # Recogemos los parámetros necesario para añadirlos a la tabla carrito
+        id = request.form.get('id')
+        nombre = request.form.get('nombre')
+        precio = request.form.get('precio')
+        cantidad = request.form.get('cantidad')
+        email = session['email']
+        
+        cursor = conexion.connection.cursor()
+        
+        # Se comprueba si el artículo ya estaba en el carrito 
+        cursor.execute("SELECT cantidad FROM carrito WHERE id_articulo = %s AND id_usuario = %s", (id, email))
+        resultado = cursor.fetchone()
+        
+        # Si es así se actualiza la cantidad que hay, si no se agrega una fila  
+        if resultado:
+            cantidad = resultado[0]+1
+            cursor.execute("UPDATE carrito SET cantidad = %s WHERE id_articulo = %s AND id_usuario = %s", (cantidad, id, email))
+        else:
+            cursor.execute("SELECT COUNT(*) FROM carrito")
+            id_carrito = cursor.fetchone()[0] + 1
+            cursor.execute("""
+                INSERT INTO carrito (id_carrito, id_articulo, id_usuario, nombre_articulo, precio_articulo, cantidad) 
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (id_carrito, id, email, nombre, precio, 1))
+        conexion.connection.commit()
+        cursor.close()
+        return redirect(url_for('productos'))
+    except Exception as ex:
+        print(f"Error: {str(ex)}")
+        return redirect(url_for('productos'))
 
 if __name__ == "__main__":
     app.run(debug=True)
