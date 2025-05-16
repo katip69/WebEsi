@@ -144,7 +144,6 @@ def carrito():
 @app.route("/agregar_carrito", methods=["POST"])
 def agregar_carrito():
     try:
-        session['email'] = 'test@test'  # Es una prueba hasta que se pueda iniciar sesión
         # Comprueba que el usuario ha iniciado sesión
         if 'email' not in session:
             return redirect(url_for('login'))
