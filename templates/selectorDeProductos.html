@@ -20,9 +20,15 @@
                 <img src="{{ url_for('static', filename='images/' + producto[0]|string + '.jpg') }}" style="height: 80rem; width: 20rem;" >
                 <p>{{producto[2]}}€</p>
                 <p>{{producto[3]}}</p>
+                <p>{{producto[4]}}</p>
                 <div id="compra">
                     <p>Disponible</p>
-                    <button id="botonCompra" style="background-color: gray;"><img id="imgCompra" src="./static/images/carrito.png"></button>
+                    <form method="POST" action="{{url_for('agregar_carrito')}}">
+                        <input type="hidden" name="id" value="{{producto[0]}}">
+                        <input type="hidden" name="nombre" value="{{producto[1]}}">
+                        <input type="hidden" name="precio" value="{{producto[2]}}">
+                        <button id="botonCompra" style="background-color: gray;"><img id="imgCompra" src="./static/images/carrito.png"></button>
+                    </form>
                 </div>
             </div>
             {% endfor %}
