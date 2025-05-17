@@ -1,7 +1,7 @@
-from flask import Flask, jsonify, request, redirect,flash, session, url_for
+from flask import Flask, jsonify, request, redirect,flash, url_for
 from flask import render_template
 from flask_mysqldb import MySQL
-from flask_login import LoginManager,login_user,logout_user,login_required
+from flask_login import LoginManager, current_user,login_user,logout_user,login_required
 import os
 from models.UserModel import User
 
@@ -105,7 +105,7 @@ def registrar():
 
     return redirect("/login")
 
-@app.route("/productos")
+@app.route("/api/productos", methods=["GET"])
 def productos():
     try:
         cursor = conexion.connection.cursor()
@@ -117,7 +117,19 @@ def productos():
         print(ex)
         return jsonify({"error": "Error al obtener los productos"}), 500
 
-@app.route("/listado")
+@app.route("/api/productos/<id_articulo>", methods=["GET"])
+def getProducto(id_articulo):
+    try:
+        cursor = conexion.connection.cursor()
+        cursor.execute("SELECT * FROM articulo WHERE id_articulo = %s", (id_articulo,))
+        articulo = cursor.fetchall()
+        cursor.close()
+        return render_template('selectorDeProductos.html', articulo=articulo)
+    except Exception as ex:
+        print(ex)
+        return jsonify({"error": "Error al obtener el producto"}), 500
+
+@app.route("/api/pedidos", methods=["GET"])
 def listado():
     try:
         cursor = conexion.connection.cursor()
@@ -128,8 +140,20 @@ def listado():
     except Exception as ex:
         print(ex)
         return jsonify({"error": "Error al obtener los pedidos"}), 500
+    
+@app.route("/api/pedidos/<id_articulo>", methods=["GET"])
+def getArticuloPedido(id_articulo):
+    try:
+        cursor = conexion.connection.cursor()
+        cursor.execute("SELECT * FROM pedido WHERE id_articulo = %s", (id_articulo,))
+        articulo = cursor.fetchall()
+        cursor.close()
+        return render_template('listadoDePedidos.html', articulo=articulo)
+    except Exception as ex:
+        print(ex)
+        return jsonify({"error": "Error al obtener el pedido"}), 500
 
-@app.route("/carrito")
+@app.route("/api/carrito", methods=["GET"])
 def carrito():
     try:
         cursor = conexion.connection.cursor()
@@ -141,38 +165,49 @@ def carrito():
         print(ex)
         return jsonify({"error": "Error al obtener el carrito"}), 500
 
-@app.route("/agregar_carrito", methods=["POST"])
+@app.route("/api/carrito/agregar", methods=["POST"])
+@login_required
 def agregar_carrito():
-    try:
-        session['email'] = 'test@test'  # Es una prueba hasta que se pueda iniciar sesión
-        # Comprueba que el usuario ha iniciado sesión
-        if 'email' not in session:
-            return redirect(url_for('login'))
-        
+    try:        
         # Recogemos los parámetros necesario para añadirlos a la tabla carrito
         id = request.form.get('id')
         nombre = request.form.get('nombre')
         precio = request.form.get('precio')
         cantidad = request.form.get('cantidad')
-        email = session['email']
+        usuario = current_user.id
         
         cursor = conexion.connection.cursor()
         
         # Se comprueba si el artículo ya estaba en el carrito 
-        cursor.execute("SELECT cantidad FROM carrito WHERE id_articulo = %s AND id_usuario = %s", (id, email))
+        cursor.execute("SELECT cantidad FROM carrito WHERE id_articulo = %s AND id_usuario = %s", (id, usuario))
         resultado = cursor.fetchone()
         
         # Si es así se actualiza la cantidad que hay, si no se agrega una fila  
         if resultado:
             cantidad = resultado[0]+1
-            cursor.execute("UPDATE carrito SET cantidad = %s WHERE id_articulo = %s AND id_usuario = %s", (cantidad, id, email))
+            cursor.execute("UPDATE carrito SET cantidad = %s WHERE id_articulo = %s AND id_usuario = %s", (cantidad, id, usuario))
         else:
             cursor.execute("SELECT COUNT(*) FROM carrito")
             id_carrito = cursor.fetchone()[0] + 1
             cursor.execute("""
                 INSERT INTO carrito (id_carrito, id_articulo, id_usuario, nombre_articulo, precio_articulo, cantidad) 
                 VALUES (%s, %s, %s, %s, %s, %s)
-            """, (id_carrito, id, email, nombre, precio, 1))
+            """, (id_carrito, id, usuario, nombre, precio, 1))
+        conexion.connection.commit()
+        cursor.close()
+        return redirect(url_for('productos'))
+    except Exception as ex:
+        print(f"Error: {str(ex)}")
+        return redirect(url_for('productos'))
+
+@app.route("/api/carrito/vaciar", methods=["DELETE"])
+def vaciar_carrito():
+    try:        
+        cursor = conexion.connection.cursor()
+
+        cursor.execute("DELETE FROM carrito")
+        cursor.fetchall()
+        
         conexion.connection.commit()
         cursor.close()
         return redirect(url_for('productos'))

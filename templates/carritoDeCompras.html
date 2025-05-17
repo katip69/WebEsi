@@ -22,6 +22,9 @@
                 <p>Cantidad: {{carrito[5]}}</p>
                 <button id="botonCompra" style="background-color:red;"><img id="imgCompra" src="./static/images/papelera.png"></button>
             </div>
+            <form method="POST" action="{{url_for('vaciar_carrito')}}">
+                <button id="botonCompra" style="background-color: red;"><img id="imgCompra" src="./static/images/papelera.png"></button>
+            </form>
             {% endfor %}
             <button id="confirmar">Confirmar compra</button>
         </div>

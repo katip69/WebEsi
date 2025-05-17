@@ -29,6 +29,9 @@
                         <input type="hidden" name="precio" value="{{producto[2]}}">
                         <button id="botonCompra" style="background-color: gray;"><img id="imgCompra" src="./static/images/carrito.png"></button>
                     </form>
+                    <form method="POST" action="{{url_for('vaciar_carrito')}}">
+                        <button id="botonCompra" style="background-color: red;"><img id="imgCompra" src="./static/images/papelera.png"></button>
+                    </form>
                 </div>
             </div>
             {% endfor %}
