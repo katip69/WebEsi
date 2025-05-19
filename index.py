@@ -1,3 +1,5 @@
+import time
+from datetime import datetime, timedelta
 from flask import Flask, jsonify, request, redirect,flash, url_for
 from flask import render_template
 from flask_mysqldb import MySQL
@@ -163,9 +165,8 @@ def carrito():
         carrito = cursor.fetchall()
         cursor.close()
         return render_template('carritoDeCompras.html', carritos=carrito)
-    except Exception as ex:
-        print(ex)
-        return jsonify({"error": "Error al obtener el carrito"}), 500
+    except Exception:
+        return render_template('carritoDeCompras.html')
 
 @app.route("/api/carrito/agregar", methods=["POST"])
 @login_required
@@ -216,6 +217,28 @@ def vaciar_carrito():
     except Exception as ex:
         print(f"Error: {str(ex)}")
         return redirect(url_for('productos'))
+    
+@app.route("/api/checkout", methods=["POST"])
+@login_required
+def procesar_compra(id_carrito):
+    try:
+        cursor = conexion.connection.cursor()
+        
+        # Se obtiene los datos del carrito a partir de su id
+        cursor.execute("SELECT * FROM carrito WHERE id_carrito = %s", (id_carrito))
+        carrito = cursor.fetchall()
+        
+        if carrito:
+            time.sleep(3)
+            fecha_pedido = datetime.now()
+            fecha_entrega = fecha_pedido + timedelta(days=3)
+            cursor.execute("INSERT INTO pedido VALUES %s, %s, %s, %s, %s, %s, %s", (current_user.id, carrito[1], carrito[2], carrito[3], fecha_pedido, fecha_entrega, 'procesando'))
+        else:
+            return jsonify({"error": "Error al obtener el carrito"}), 500
+
+    except Exception as ex:
+        print(f"Error: {str(ex)}")
+        return redirect(url_for('carrito'))
 
 if __name__ == "__main__":
     app.run(debug=True)

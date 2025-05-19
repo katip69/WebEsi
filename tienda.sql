@@ -25,8 +25,8 @@ CREATE TABLE usuario (
 -- Crear tabla carrito
 CREATE TABLE carrito (
 	id_carrito INT NOT NULL,
-	id_articulo INT NOT NULL,
 	id_usuario INT NOT NULL,
+	id_articulo INT NOT NULL,
 	nombre_articulo VARCHAR(20) NOT NULL,
 	precio_articulo DOUBLE NOT NULL,
 	cantidad INT NOT NULL,
@@ -39,19 +39,11 @@ CREATE TABLE carrito (
 CREATE TABLE pedido (
 	id INT AUTO_INCREMENT PRIMARY KEY,
 	id_usuario INT NOT NULL,
+	id_articulo INT NOT NULL,
+	nombre_articulo VARCHAR(20),
 	fecha_pedido DATE NOT NULL,
 	fecha_entrega DATE NOT NULL,
 	estado ENUM('procesando', 'completado', 'cancelado') NOT NULL,
-	CONSTRAINT usuario_pedido_fk FOREIGN KEY(id_usuario) REFERENCES usuario(id)
-);
-
--- Crear tabla pedido_articulo
-CREATE TABLE pedido_articulo (
-	id_pedido INT NOT NULL,
-	id_articulo INT,
-	precio DOUBLE NOT NULL,
-	cantidad INT NOT NULL,
-	CONSTRAINT id_p FOREIGN KEY(id_pedido) REFERENCES pedido(id) ON DELETE CASCADE,
-	CONSTRAINT id_ar FOREIGN KEY(id_articulo) REFERENCES articulo(id),
-	PRIMARY KEY (id_pedido, id_articulo)
+	CONSTRAINT usuario_pedido_fk FOREIGN KEY(id_usuario) REFERENCES usuario(id),
+	CONSTRAINT articulo_pedido_fk FOREIGN KEY(id_articulo, nombre_articulo) REFERENCES articulo(id, nombre)
 );
