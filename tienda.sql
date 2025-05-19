@@ -47,3 +47,9 @@ CREATE TABLE pedido (
 	CONSTRAINT usuario_pedido_fk FOREIGN KEY(id_usuario) REFERENCES usuario(id),
 	CONSTRAINT articulo_pedido_fk FOREIGN KEY(id_articulo, nombre_articulo) REFERENCES articulo(id, nombre)
 );
+
+-- Crear tabla con la información de la página 
+CREATE TABLE info (
+	id INT PRIMARY KEY,
+	descripcion VARCHAR(200) NOT NULL
+);

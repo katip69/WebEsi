@@ -275,6 +275,18 @@ def procesar_compra():
     except Exception as ex:
         print(f"Error: {str(ex)}")
         return flash("Error al procesar la compra")
+    
+@app.route("/api/menu", methods=["GET"])
+def menu():
+    try:
+        cursor = conexion.connection.cursor()
+        cursor.execute("SELECT descripcion FROM info")
+        info = cursor.fetchall()
+        cursor.close()
+        return render_template('index.html', info=info)
+    except Exception as ex:
+        print(ex)
+        return flash("Error al obtener el menu")
 
 if __name__ == "__main__":
     app.run(debug=True)
