@@ -4,6 +4,7 @@ from flask_mysqldb import MySQL
 from flask_login import LoginManager, current_user,login_user,logout_user,login_required
 import os
 from models.UserModel import User
+import hashlib
 
 app=Flask(__name__)
 
@@ -36,12 +37,14 @@ def auth():
             cursor = conexion.connection.cursor()
             print(request.form["email"])
             email=request.form["email"]
+            hashPassword = hashlib.sha256(request.form["password"].encode()).hexdigest()
+            print("here",hashPassword)
             cursor.execute("SELECT * FROM usuario WHERE email = (%s)", (email,))                        
             auth = cursor.fetchone()
             cursor.close()
             if auth != None:
                 user=User(auth[0],auth[1],auth[2],auth[3])
-                if user.password == request.form["password"]:
+                if user.password == hashPassword:
                     login_user(user)
                     return redirect("/login")
                 else:
@@ -62,7 +65,6 @@ def login():
 @app.route('/api/logout',methods=["GET","POST"])
 def logout():
     logout_user()
-    print("deslogueo")
     return redirect('/login')
 
 # Para la vista del usuario
@@ -94,13 +96,13 @@ def get_users():
 def registrar():
     # Obtener los datos del formulario
     correo = request.form['email']
-    password = request.form['password']
+    hashPassword = hashlib.sha256(request.form["password"].encode()).hexdigest()
     nombre = request.form['nombre']
 
     # Insertarlos en la base de datos
     cursor = conexion.connection.cursor()
     cursor.execute("INSERT INTO usuario (nombre,email, password) VALUE (%s,%s, %s)", 
-                   (nombre,correo, password))
+                   (nombre,correo, hashPassword))
     conexion.connection.commit()  # ¡No olvides confirmar los cambios!
 
     return redirect("/login")
