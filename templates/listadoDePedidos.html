@@ -1,28 +1,20 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <title>listado de pedidos</title>
-        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    </head>
-    <body>
-        <nav>
-            <a href="{{url_for('index')}}">Inicio</a>
-            <a href="{{url_for('productos')}}">Tienda</a>
-            <a href="{{url_for('listado')}}">Listado</a>
-            <a href="{{url_for('carrito')}}">Carrito</a>
-            <a href="{{url_for('login')}}">Login</a>
-        </nav>
-        <div id="listado">
-            {% for pedido in pedidos %}
-            <div id="pedido">
-                <h1>ID del pedido: {{pedido[0]}}</h1>
-                <p>Usuario: {{pedido[1]}}</p>
-                <p>Fecha del pedido: {{pedido[2]}}</p>
-                <p>Fecha de la entrega: {{pedido[3]}}</p>
-                <p>Estado: {{pedido[4]}}</p>
-            </div>
-            {% endfor %}
+{% extends './layout.html' %}
+
+{% block title %}Listado de pedidos{% endblock %}
+
+{% block body %}
+<p class="text-center font-monospace h1 custom-margin-y">Listado de pedidos</p>
+{% for carrito in carritos %}
+<div class="card mb-3 custom-center product">
+    <div class="row g-0 col-md-8">
+        <div class="card-body">
+            <h5 class="card-title font-monospace">ID del pedido: {{pedido[0]}}</h5>
+            <p class="card-text font-monospace">Usuario: {{pedido[1]}}</p>
+            <p class="card-text font-monospace">Fecha de pedido: {{pedido[2]}}</p>
+            <p class="card-text font-monospace">Fecha de la entrega: {{pedido[3]}}</p>
+            <p class="card-text font-monospace">Estado: {{pedido[4]}}</p>
         </div>
-    </body>
-</html>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

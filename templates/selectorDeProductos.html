@@ -1,40 +1,25 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <title>selector de productos</title>
-        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    </head>
-    <body>
-        <nav>
-            <a href="{{url_for('index')}}">Inicio</a>
-            <a href="{{url_for('productos')}}">Tienda</a>
-            <a href="{{url_for('listado')}}">Listado</a>
-            <a href="{{url_for('carrito')}}">Carrito</a>
-            <a href="{{url_for('login')}}">Login</a>
-        </nav>
-        <div id="contenedor">
-            {% for producto in articulos %}
-            <div id="producto">
-                <h1>{{producto[1]}}</h1>
-                <img src="{{ url_for('static', filename='images/' + producto[0]|string + '.jpg') }}" style="height: 80rem; width: 20rem;" >
-                <p>{{producto[2]}}€</p>
-                <p>{{producto[3]}}</p>
-                <p>{{producto[4]}}</p>
-                <div id="compra">
-                    <p>Disponible</p>
-                    <form method="POST" action="{{url_for('agregar_carrito')}}">
-                        <input type="hidden" name="id" value="{{producto[0]}}">
-                        <input type="hidden" name="nombre" value="{{producto[1]}}">
-                        <input type="hidden" name="precio" value="{{producto[2]}}">
-                        <button id="botonCompra" style="background-color: gray;"><img id="imgCompra" src="./static/images/carrito.png"></button>
-                    </form>
-                    <form method="POST" action="{{url_for('vaciar_carrito')}}">
-                        <button id="botonCompra" style="background-color: red;"><img id="imgCompra" src="./static/images/papelera.png"></button>
-                    </form>
-                </div>
+{% extends './layout.html' %}
+
+{% block title %}Selector de productos{% endblock %}
+
+{% block body %}
+<p class="text-center font-monospace h1 custom-margin-y">Selector de productos</p>
+{% for producto in articulos %}
+<div class="card mb-3 custom-center product">
+    <div class="row g-0 col-md-8">
+        <div class="card-body">
+            <h5 class="card-title font-monospace">{{producto[1]}}</h5>
+            <div class="col-md-4">
+                <img src="img/aux.png" class="img-fluid rounded-start">
             </div>
-            {% endfor %}
+            <p class="card-text font-monospace">{{producto[2]}}</p>
+            <p class="card-text font-monospace">{{producto[3]}}</p>
         </div>
-    </body>
-</html>
+    </div>
+    <div style="margin-left: 10px">
+        <p class="font-monospace">Disponible</p>
+        <button class="btn btn-warning btn-card" type="button"><img src="./static/images/carrito.png" class="img-card"/></button>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
