@@ -92,6 +92,12 @@ def get_users():
         data['mensaje'] = 'error'
     return jsonify(data), 200
 
+@app.route('/registro')
+def registro():
+    print("hre")
+    return render_template('registrar.html')
+
+
 @app.route("/api/registrar", methods=["POST"])
 def registrar():
     # Obtener los datos del formulario
