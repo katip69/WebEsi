@@ -1,29 +1,24 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <title>Login</title>
-        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    </head>
-    <body>
-        <nav>
-            <h1>Bienvenido, {{ current_user.email }}</h1>
-            <a href="{{url_for('index')}}">Inicio</a>
-            <a href="{{url_for('productos')}}">Tienda</a>
-            <a href="{{url_for('listado')}}">Listado</a>
-            <a href="{{url_for('carrito')}}">Carrito</a>
-            <a href="{{url_for('login')}}">Login</a>
-        </nav>
-        <div style="text-align: center;border: 2px solid black;padding: 10rem; margin-top: 5rem; ">
-            <p>Iniciar Sesión</p>
-            <form id="caja" action="/api/login" method="POST">
-                <input type="email" name="email" placeholder="correo electrónico" required>
-                <input type="password" name="password" placeholder="contraseña" required>
-                <button style="margin-top: 10px;" type="submit">registrar</button>
-            </form>
+{% extends './layout.html' %}
+
+{% block title %}Iniciar Sesion{% endblock %}
+
+{% block body %}
+<p class="text-center font-monospace h1 custom-margin-y">Iniciar Sesion</p>
+<div class="container custom-margin-y">
+    <form action="/api/login" method="POST">
+        <div class="row mb-3">
+            <label for="inputEmail3" class="col-sm-2 col-form-label">Email</label>
+            <div class="col-sm-10">
+                <input type="email" class="form-control" id="inputEmail3" name="email" placeholder="correo electrónico" required>
+            </div>
         </div>
-        <form action="/api/logout" method="POST">
-            <button type="submit">Cerrar sesión</button>
-        </form>
-    </body>
-</html>
+        <div class="row mb-3">
+            <label for="inputPassword3" class="col-sm-2 col-form-label">Contraseña</label>
+            <div class="col-sm-10">
+                <input type="password" class="form-control" id="inputPassword3" name="password" placeholder="contraseña" required>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Registrarse</button>
+    </form>
+</div>
+{% endblock %}
