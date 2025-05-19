@@ -119,7 +119,7 @@ def productos():
         return render_template('selectorDeProductos.html', articulos=articulos)
     except Exception as ex:
         print(ex)
-        return jsonify({"error": "Error al obtener los productos"}), 500
+        return flash("Error al obtener los productos")
 
 @app.route("/api/productos/<id_articulo>", methods=["GET"])
 def getProducto(id_articulo):
@@ -131,7 +131,7 @@ def getProducto(id_articulo):
         return render_template('selectorDeProductos.html', articulo=articulo)
     except Exception as ex:
         print(ex)
-        return jsonify({"error": "Error al obtener el producto"}), 500
+        return flash("Error al obtener el producto")
 
 @app.route("/api/pedidos", methods=["GET"])
 def listado():
@@ -143,7 +143,7 @@ def listado():
         return render_template('listadoDePedidos.html', pedidos=pedidos)
     except Exception as ex:
         print(ex)
-        return jsonify({"error": "Error al obtener los pedidos"}), 500
+        return flash("Error al obtener los pedidos")
     
 @app.route("/api/pedidos/<id_articulo>", methods=["GET"])
 def getArticuloPedido(id_articulo):
@@ -155,53 +155,70 @@ def getArticuloPedido(id_articulo):
         return render_template('listadoDePedidos.html', articulo=articulo)
     except Exception as ex:
         print(ex)
-        return jsonify({"error": "Error al obtener el pedido"}), 500
+        return flash("Error al obtener el pedido")
 
 @app.route("/api/carrito", methods=["GET"])
+@login_required
 def carrito():
     try:
         cursor = conexion.connection.cursor()
         cursor.execute("SELECT * FROM carrito")
         carrito = cursor.fetchall()
+        if not carrito:
+            return render_template('carritoDeCompras.html', carritos=[])
         cursor.close()
         return render_template('carritoDeCompras.html', carritos=carrito)
-    except Exception:
-        return render_template('carritoDeCompras.html')
+    except Exception as ex:
+        print(ex)
+        return flash("Error al obtener el carrito")
 
 @app.route("/api/carrito/agregar", methods=["POST"])
 @login_required
 def agregar_carrito():
     try:        
         # Recogemos los parámetros necesario para añadirlos a la tabla carrito
-        id = request.form.get('id')
+        id_articulo = request.form.get('id')
         nombre = request.form.get('nombre')
         precio = request.form.get('precio')
         cantidad = request.form.get('cantidad')
-        usuario = current_user.id
+        usuario = current_user.email
+        id_usuario = current_user.id
         
         cursor = conexion.connection.cursor()
         
+        cursor.execute("""
+            SELECT id, nombre, precio_actual 
+            FROM articulo 
+            WHERE id = %s AND nombre = %s AND precio_actual = %s
+        """, (id_articulo, nombre, precio))
+        
+        articulo = cursor.fetchone()
+        if not articulo:
+            flash('El artículo no existe o los datos no coinciden', 'error')
+            return redirect(url_for('productos'))
+
         # Se comprueba si el artículo ya estaba en el carrito 
-        cursor.execute("SELECT cantidad FROM carrito WHERE id_articulo = %s AND id_usuario = %s", (id, usuario))
+        cursor.execute("SELECT cantidad FROM carrito WHERE id_articulo = %s AND id_usuario = %s", (id_articulo, usuario))
         resultado = cursor.fetchone()
         
         # Si es así se actualiza la cantidad que hay, si no se agrega una fila  
         if resultado:
             cantidad = resultado[0]+1
-            cursor.execute("UPDATE carrito SET cantidad = %s WHERE id_articulo = %s AND id_usuario = %s", (cantidad, id, usuario))
+            cursor.execute("UPDATE carrito SET cantidad = %s WHERE id_articulo = %s AND id_usuario = %s", (cantidad, id_articulo, usuario))
         else:
             cursor.execute("SELECT COUNT(*) FROM carrito")
             id_carrito = cursor.fetchone()[0] + 1
             cursor.execute("""
-                INSERT INTO carrito (id_carrito, id_articulo, id_usuario, nombre_articulo, precio_articulo, cantidad) 
+                INSERT INTO carrito (id_carrito, id_usuario, id_articulo, nombre_articulo, precio_articulo, cantidad) 
                 VALUES (%s, %s, %s, %s, %s, %s)
-            """, (id_carrito, id, usuario, nombre, precio, 1))
+            """, (id_carrito, id_usuario, id_articulo, nombre, precio, 1))
         conexion.connection.commit()
         cursor.close()
-        return redirect(url_for('productos'))
+        flash('Producto agregado al carrito correctamente', 'success')
+        return render_template('selectorDeProductos.html')
     except Exception as ex:
         print(f"Error: {str(ex)}")
-        return redirect(url_for('productos'))
+        return flash("Error al agregar al carrito")
 
 @app.route("/api/carrito/vaciar", methods=["DELETE"])
 def vaciar_carrito():
@@ -216,29 +233,42 @@ def vaciar_carrito():
         return redirect(url_for('productos'))
     except Exception as ex:
         print(f"Error: {str(ex)}")
-        return redirect(url_for('productos'))
+        return flash("Error al vaciar el carrito")
     
 @app.route("/api/checkout", methods=["POST"])
-@login_required
-def procesar_compra(id_carrito):
+def procesar_compra():
     try:
         cursor = conexion.connection.cursor()
         
         # Se obtiene los datos del carrito a partir de su id
-        cursor.execute("SELECT * FROM carrito WHERE id_carrito = %s", (id_carrito))
+        cursor.execute("SELECT * FROM carrito")
         carrito = cursor.fetchall()
         
         if carrito:
-            time.sleep(3)
             fecha_pedido = datetime.now()
             fecha_entrega = fecha_pedido + timedelta(days=3)
-            cursor.execute("INSERT INTO pedido VALUES %s, %s, %s, %s, %s, %s, %s", (current_user.id, carrito[1], carrito[2], carrito[3], fecha_pedido, fecha_entrega, 'procesando'))
+            for item in carrito:
+                cursor.execute("""
+                    INSERT INTO pedido 
+                    (id_usuario, id_articulo, nombre_articulo, fecha_pedido, fecha_entrega, estado)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                """, (
+                    current_user.id,
+                    item[2],
+                    item[3],
+                    fecha_pedido.date(),
+                    fecha_entrega.date(),
+                    'procesando'
+                ))
+            vaciar_carrito()
+            time.sleep(3)
+            return redirect(url_for('productos'))
         else:
-            return jsonify({"error": "Error al obtener el carrito"}), 500
+            return flash("Error al obtener el carrito")
 
     except Exception as ex:
         print(f"Error: {str(ex)}")
-        return redirect(url_for('carrito'))
+        return flash("Error al procesar la compra")
 
 if __name__ == "__main__":
     app.run(debug=True)
