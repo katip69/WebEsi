@@ -1,32 +1,29 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <title>Carrito de compras</title>
-        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    </head>
-    <body>
-        <nav>
-            <a href="{{url_for('index')}}">Inicio</a>
-            <a href="{{url_for('productos')}}">Tienda</a>
-            <a href="{{url_for('listado')}}">Listado</a>
-            <a href="{{url_for('carrito')}}">Carrito</a>
-            <a href="{{url_for('login')}}">Login</a>
-        </nav>
-        <div id="carro">
-            {% for carrito in carritos %}
-            <h1>Carrito {{carrito[0]}}</h1>
-            <div id="compra">
-                <p>Nombre: {{carrito[3]}}</p>
-                <p>Precio: {{carrito[4]}}</p>
-                <p>Cantidad: {{carrito[5]}}</p>
-                <button id="botonCompra" style="background-color:red;"><img id="imgCompra" src="./static/images/papelera.png"></button>
-            </div>
-            <form method="POST" action="{{url_for('vaciar_carrito')}}">
-                <button id="botonCompra" style="background-color: red;"><img id="imgCompra" src="./static/images/papelera.png"></button>
-            </form>
-            {% endfor %}
-            <button id="confirmar">Confirmar compra</button>
+{% extends './layout.html' %}
+
+{% block title %}Carrito{% endblock %}
+
+{% block body %}
+<p class="text-center font-monospace h1 custom-margin-y">Carrito {{carrito[0]}}</p>
+{% for carrito in carritos %}
+<div class="card mb-3 custom-center product">
+    <div class="row g-0">
+        <div class="col-md-4">
+            <img src="..." class="img-fluid rounded-start">
         </div>
-    </body>
-</html>
+        <div class="col-md-8">
+            <div class="card-body">
+                <h5 class="card-title font-monospace">Nombre: {{carrito[3]}}</h5>
+                <p class="card-text font-monospace">Precio: {{carrito[4]}}</p>
+                <p class="card-text font-monospace">Cantidad: {{carrito[5]}}</p>
+            </div>
+        </div>
+    </div>
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+        <button class="btn btn-warning btn-card" type="button"><img src="./static/images/papelera.png" class="img-card"/></button>
+    </div>
+</div>
+{% endfor %}
+<div class="d-grid gap-2 col-2 mx-auto">
+    <button class="btn btn-primary" type="button">Confirmar compra</button>
+</div>
+{% endblock %}
