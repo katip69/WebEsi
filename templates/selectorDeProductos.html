@@ -4,22 +4,34 @@
 
 {% block body %}
 <p class="text-center font-monospace h1 custom-margin-y">Selector de productos</p>
+
 {% for producto in articulos %}
-<div class="card mb-3 custom-center product">
-    <div class="row g-0 col-md-8">
-        <div class="card-body">
-            <h5 class="card-title font-monospace">{{producto[1]}}</h5>
-            <div class="col-md-4">
-                <img src="img/aux.png" class="img-fluid rounded-start">
+<form method="POST" action="/api/carrito/agregar">
+    <div class="card mb-3 custom-center product">
+        <div class="row g-0 col-md-8">
+            <div class="card-body">
+                <h5 class="card-title font-monospace">Nombre: {{ producto[1] }}</h5>
+                <p class="card-text font-monospace">Precio: {{ producto[2] }}</p>
+                <p class="card-text font-monospace">Descripcion: {{ producto[3] }}</p>
+
+                <!-- Campos ocultos para enviar al backend -->
+                <input type="hidden" name="id" value="{{ producto[0] }}">
+                <input type="hidden" name="nombre" value="{{ producto[1] }}">
+                <input type="hidden" name="precio" value="{{ producto[2] }}">
+                <input type="hidden" name="descripcion" value="{{ producto[3] }}">
             </div>
-            <p class="card-text font-monospace">{{producto[2]}}</p>
-            <p class="card-text font-monospace">{{producto[3]}}</p>
+        </div>
+
+        <div style="margin-left: 10px">
+            <p class="font-monospace">Cantidad: {{ producto[4] }}</p>
+            <input type="hidden" name="cantidad" value="{{ producto[4] }}">
+
+            <button class="btn btn-warning btn-card" type="submit">
+                <img src="{{ url_for('static', filename='images/carrito.png') }}" class="img-card" />
+            </button>
         </div>
     </div>
-    <div style="margin-left: 10px">
-        <p class="font-monospace">Disponible</p>
-        <button class="btn btn-warning btn-card" type="button"><img src="./static/images/carrito.png" class="img-card"/></button>
-    </div>
-</div>
+</form>
 {% endfor %}
+
 {% endblock %}

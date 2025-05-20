@@ -25,9 +25,11 @@
                         <li class="nav-item">
                             <a class="nav-link custom-margin-x" href="{{ url_for('productos') }}">Tienda</a>
                         </li>
+                        {% if current_user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link custom-margin-x" href="{{ url_for('listado') }}">Listado</a>
+                            <a class="nav-link custom-margin-x" href="{{ url_for('pedidos') }}">Listado</a>
                         </li>
+                        {% endif %}
                         {% if current_user.is_authenticated %}
                         <li class="nav-item">
                             <a class="nav-link custom-margin-x" href="{{ url_for('carrito') }}">Carrito</a>

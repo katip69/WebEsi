@@ -14,7 +14,7 @@ class User(UserMixin):
     def get_by_id(self, db, id):
         try:
             cursor = db.connection.cursor()
-            sql = "SELECT * FROM usuario WHERE id = %s" #esto es una guarrada historica es para probar
+            sql = "SELECT * FROM usuario WHERE id = %s" 
             cursor.execute(sql, (id,))
             row = cursor.fetchone()
             if row != None:
