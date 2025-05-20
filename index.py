@@ -1,7 +1,7 @@
 import time
 from datetime import datetime, timedelta
 from flask import Flask, jsonify, request, redirect,flash, url_for
-from flask import render_template
+from flask import render_template,session
 from flask_mysqldb import MySQL
 from flask_login import LoginManager, current_user,login_user,logout_user,login_required
 import os
@@ -30,7 +30,12 @@ def load_user(id):
 @app.route("/")
 @app.route("/index")
 def index():
-    return render_template('index.html')
+    info = session.get("info")
+    print(info)
+    if info == None:
+        return redirect('/api/menu')
+    else:
+        return render_template('index.html', info=info)
 
 @app.route("/api/login",methods=['GET','POST'])
 def auth():
@@ -69,34 +74,8 @@ def logout():
     logout_user()
     return redirect('/login')
 
-# Para la vista del usuario
-
-@app.route("/users/<user_id>")
-def get_user(user_id):                  # Método que recibe el id del usuario
-    user = {
-        "id": user_id,
-        "name": "test",
-        "email": "test@test"}
-    query = request.args.get('query')   # Se obtiene el query de la URL
-    if query:                           # Si existe el query, se agrega al diccionario
-        user['query'] = query
-    return jsonify(user), 200           # Se devuelve el usuario en formato JSON
-
-@app.route("/users")
-def get_users():
-    data={}
-    try:
-        cursor = conexion.connection.cursor()
-        cursor.execute("SELECT * FROM usuario")
-        users = cursor.fetchall()
-        data['mensaje'] = 'exito'
-    except Exception as ex:
-        data['mensaje'] = 'error'
-    return jsonify(data), 200
-
 @app.route('/registro')
 def registro():
-    print("hre")
     return render_template('registrar.html')
 
 
@@ -275,18 +254,19 @@ def procesar_compra():
     except Exception as ex:
         print(f"Error: {str(ex)}")
         return flash("Error al procesar la compra")
-    
 @app.route("/api/menu", methods=["GET"])
 def menu():
     try:
         cursor = conexion.connection.cursor()
         cursor.execute("SELECT descripcion FROM info")
-        info = cursor.fetchall()
+        info = cursor.fetchone()
         cursor.close()
-        return render_template('index.html', info=info)
+        if info:
+            session["info"] = info[0]  # Guardamos solo si hay descripción
+        return redirect(url_for('index'))
     except Exception as ex:
         print(ex)
-        return flash("Error al obtener el menu")
-
+        flash("Error al obtener el menú")
+        return redirect(url_for('index'))
 if __name__ == "__main__":
     app.run(debug=True)
