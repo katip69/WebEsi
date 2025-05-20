@@ -19,12 +19,12 @@ CREATE TABLE usuario (
 	id INT AUTO_INCREMENT PRIMARY KEY,
 	nombre VARCHAR(100) NOT NULL,
 	email VARCHAR(100) UNIQUE NOT NULL,
-	password VARCHAR(100) NOT NULL
+	password VARCHAR(100) NOT NULL,
+	admin INT NOT NULL
 );
 
 -- Crear tabla carrito
 CREATE TABLE carrito (
-	id_carrito INT NOT NULL,
 	id_usuario INT NOT NULL,
 	id_articulo INT NOT NULL,
 	nombre_articulo VARCHAR(20) NOT NULL,
@@ -32,7 +32,7 @@ CREATE TABLE carrito (
 	cantidad INT NOT NULL,
 	CONSTRAINT usuario_fk FOREIGN KEY(id_usuario) REFERENCES usuario(id),
 	CONSTRAINT articulo_fk FOREIGN KEY(id_articulo, nombre_articulo, precio_articulo) REFERENCES articulo(id, nombre, precio_actual),
-	PRIMARY KEY (id_carrito, id_articulo)
+	PRIMARY KEY (id_usuario, id_articulo)
 );
 
 -- Crear tabla pedido

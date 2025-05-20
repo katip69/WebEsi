@@ -3,7 +3,11 @@
 {% block title %}Carrito{% endblock %}
 
 {% block body %}
-<p class="text-center font-monospace h1 custom-margin-y">Carrito {{carrito[0]}}</p>
+
+{% if carritos == 'vacio' %}
+<p class="text-center font-monospace h1 custom-margin-y">Carrito {{carritos}}</p>
+{% else %}
+<p class="text-center font-monospace h1 custom-margin-y">Carritos</p>
 {% for carrito in carritos %}
 <div class="card mb-3 custom-center product">
     <div class="row g-0">
@@ -12,9 +16,9 @@
         </div>
         <div class="col-md-8">
             <div class="card-body">
-                <h5 class="card-title font-monospace">Nombre: {{carrito[3]}}</h5>
-                <p class="card-text font-monospace">Precio: {{carrito[4]}}</p>
-                <p class="card-text font-monospace">Cantidad: {{carrito[5]}}</p>
+                <h5 class="card-title font-monospace">Nombre: {{carrito[2]}}</h5>
+                <p class="card-text font-monospace">Precio: {{carrito[3]}}</p>
+                <p class="card-text font-monospace">Cantidad: {{carrito[4]}}</p>
             </div>
         </div>
     </div>
@@ -22,8 +26,9 @@
         <button class="btn btn-warning btn-card" type="button"><img src="./static/images/papelera.png" class="img-card"/></button>
     </div>
 </div>
-{% endfor %}
 <div class="d-grid gap-2 col-2 mx-auto">
     <button class="btn btn-primary" type="button">Confirmar compra</button>
 </div>
+{% endfor %}
+{% endif %}
 {% endblock %}

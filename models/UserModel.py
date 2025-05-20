@@ -2,11 +2,12 @@ from flask_login import UserMixin
 
 class User(UserMixin):
 
-    def __init__(self,id,nombre,email,password) -> None:
+    def __init__(self,id,nombre,email,password,admin) -> None:
         self.nombre=nombre
         self.password=password
         self.email=email
         self.id=id
+        self.admin=admin
 
 
     @classmethod
@@ -17,7 +18,7 @@ class User(UserMixin):
             cursor.execute(sql, (id,))
             row = cursor.fetchone()
             if row != None:
-                return User(row[0], row[1], row[2],None)
+                return User(row[0], row[1], row[2],None,row[3])
             else:
                 return None
         except Exception as ex:

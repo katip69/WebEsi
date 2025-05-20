@@ -24,14 +24,12 @@ login_manager_app=LoginManager(app)
 
 @login_manager_app.user_loader
 def load_user(id):
-    print("load_user",id)
     return User.get_by_id(conexion,id)
 
 @app.route("/")
 @app.route("/index")
 def index():
     info = session.get("info")
-    print(info)
     if info == None:
         return redirect('/api/menu')
     else:
@@ -50,7 +48,7 @@ def auth():
             auth = cursor.fetchone()
             cursor.close()
             if auth != None:
-                user=User(auth[0],auth[1],auth[2],auth[3])
+                user=User(auth[0],auth[1],auth[2],auth[3],auth[4])
                 if user.password == hashPassword:
                     login_user(user)
                     return redirect("/login")
@@ -62,7 +60,7 @@ def auth():
         except Exception as ex:
             return str(ex)
     else:
-        return render_template('login.html')
+        return redirect('/login')
     
 
 @app.route("/login", methods=["GET", "POST"])
@@ -85,25 +83,38 @@ def registrar():
     correo = request.form['email']
     hashPassword = hashlib.sha256(request.form["password"].encode()).hexdigest()
     nombre = request.form['nombre']
+    admin = 0
 
     # Insertarlos en la base de datos
     cursor = conexion.connection.cursor()
-    cursor.execute("INSERT INTO usuario (nombre,email, password) VALUE (%s,%s, %s)", 
-                   (nombre,correo, hashPassword))
+    cursor.execute("INSERT INTO usuario (nombre,email, password,admin) VALUE (%s,%s, %s,%s)", 
+                   (nombre,correo, hashPassword,admin))
     conexion.connection.commit()  # ¡No olvides confirmar los cambios!
 
     return redirect("/login")
 
-@app.route("/api/productos", methods=["GET"])
+@app.route("/productos")
 def productos():
+    articulos=session.get('articulos')
+    if articulos == None:
+        return redirect('/api/productos')
+    else:
+        print("carga coño")
+        session.pop('articulos',None)
+        return render_template('selectorDeProductos.html',articulos=articulos)    
+
+
+@app.route("/api/productos", methods=["GET"])
+def get_productos():
     try:
         cursor = conexion.connection.cursor()
         cursor.execute("SELECT * FROM articulo")
         articulos = cursor.fetchall()
         cursor.close()
-        return render_template('selectorDeProductos.html', articulos=articulos)
+        session['articulos']=articulos
+        return redirect('productos')
     except Exception as ex:
-        print(ex)
+        print("soy subnormal")
         return flash("Error al obtener los productos")
 
 @app.route("/api/productos/<id_articulo>", methods=["GET"])
@@ -142,20 +153,37 @@ def getArticuloPedido(id_articulo):
         print(ex)
         return flash("Error al obtener el pedido")
 
+@app.route("/carrito")
+def carrito():
+    carrito = session.get("carrito")
+    if carrito == None:
+        return redirect('/api/carrito')
+    else:
+        session.pop('carrito',None)
+        print("here",carrito)
+        return render_template('carritoDeCompras.html', carritos=carrito)
+
 @app.route("/api/carrito", methods=["GET"])
 @login_required
-def carrito():
+def get_carrito():
     try:
+        id_usuario=current_user.id
         cursor = conexion.connection.cursor()
-        cursor.execute("SELECT * FROM carrito")
+        cursor.execute("SELECT * FROM carrito WHERE id_usuario = %s",(id_usuario,))
         carrito = cursor.fetchall()
-        if not carrito:
-            return render_template('carritoDeCompras.html', carritos=[])
         cursor.close()
-        return render_template('carritoDeCompras.html', carritos=carrito)
+        print("pasas por aqui?")
+        if not carrito:
+            session["carrito"] = 'vacio'
+            print("VACIO")
+        else:
+            print("QUE HAY CARRITo")
+            session["carrito"]= carrito 
+        return redirect('carrito')
     except Exception as ex:
-        print(ex)
-        return flash("Error al obtener el carrito")
+        session["carrito"] = 'vacio' 
+        print("cabum")
+        return redirect('carrito')
 
 @app.route("/api/carrito/agregar", methods=["POST"])
 @login_required
@@ -254,6 +282,7 @@ def procesar_compra():
     except Exception as ex:
         print(f"Error: {str(ex)}")
         return flash("Error al procesar la compra")
+    
 @app.route("/api/menu", methods=["GET"])
 def menu():
     try:
