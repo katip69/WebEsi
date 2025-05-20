@@ -7,6 +7,7 @@ from flask_login import LoginManager, current_user,login_user,logout_user,login_
 import os
 from models.UserModel import User
 import hashlib
+import base64
 
 app=Flask(__name__)
 
@@ -40,10 +41,8 @@ def auth():
     if request.method=='POST':
         try:
             cursor = conexion.connection.cursor()
-            print(request.form["email"])
             email=request.form["email"]
             hashPassword = hashlib.sha256(request.form["password"].encode()).hexdigest()
-            print("here",hashPassword)
             cursor.execute("SELECT * FROM usuario WHERE email = (%s)", (email,))                        
             auth = cursor.fetchone()
             cursor.close()
@@ -96,11 +95,11 @@ def registrar():
 @app.route("/productos")
 def productos():
     articulos=session.get('articulos')
+    session.pop('articulos',None)
     if articulos == None:
         return redirect('/api/productos')
     else:
         print("carga coño")
-        session.pop('articulos',None)
         return render_template('selectorDeProductos.html',articulos=articulos)    
 
 
@@ -112,10 +111,10 @@ def get_productos():
         articulos = cursor.fetchall()
         cursor.close()
         session['articulos']=articulos
-        return redirect('productos')
+        return redirect('/productos')
     except Exception as ex:
-        print("soy subnormal")
         return flash("Error al obtener los productos")
+
 
 @app.route("/api/productos/<id_articulo>", methods=["GET"])
 def getProducto(id_articulo):
@@ -129,14 +128,27 @@ def getProducto(id_articulo):
         print(ex)
         return flash("Error al obtener el producto")
 
+@app.route("/pedidos")
+@login_required
+def pedidos():
+    pedidos=session.get('pedidos')
+    session.pop('pedidos',None)
+    if pedidos == None:
+        return redirect('/api/pedidos')
+    else:
+        return render_template('listadoDePedidos.html',pedidos=pedidos)    
+
+
 @app.route("/api/pedidos", methods=["GET"])
+@login_required
 def listado():
     try:
         cursor = conexion.connection.cursor()
         cursor.execute("SELECT * FROM pedido")
         pedidos = cursor.fetchall()
         cursor.close()
-        return render_template('listadoDePedidos.html', pedidos=pedidos)
+        session['pedidos']=pedidos
+        return redirect("/pedidos")
     except Exception as ex:
         print(ex)
         return flash("Error al obtener los pedidos")
@@ -172,29 +184,24 @@ def get_carrito():
         cursor.execute("SELECT * FROM carrito WHERE id_usuario = %s",(id_usuario,))
         carrito = cursor.fetchall()
         cursor.close()
-        print("pasas por aqui?")
         if not carrito:
             session["carrito"] = 'vacio'
-            print("VACIO")
         else:
-            print("QUE HAY CARRITo")
             session["carrito"]= carrito 
-        return redirect('carrito')
+        return redirect("/carrito")
     except Exception as ex:
         session["carrito"] = 'vacio' 
-        print("cabum")
-        return redirect('carrito')
+        return redirect("/carrito")
 
 @app.route("/api/carrito/agregar", methods=["POST"])
 @login_required
 def agregar_carrito():
     try:        
         # Recogemos los parámetros necesario para añadirlos a la tabla carrito
-        id_articulo = request.form.get('id')
+        id_articulo = int(request.form.get('id'))
         nombre = request.form.get('nombre')
-        precio = request.form.get('precio')
-        cantidad = request.form.get('cantidad')
-        usuario = current_user.email
+        precio = float(request.form.get('precio'))
+        cantidad = int(request.form.get('cantidad'))
         id_usuario = current_user.id
         
         cursor = conexion.connection.cursor()
@@ -211,24 +218,27 @@ def agregar_carrito():
             return redirect(url_for('productos'))
 
         # Se comprueba si el artículo ya estaba en el carrito 
-        cursor.execute("SELECT cantidad FROM carrito WHERE id_articulo = %s AND id_usuario = %s", (id_articulo, usuario))
+        cursor.execute("SELECT cantidad FROM carrito WHERE id_articulo = %s AND id_usuario = %s", (id_articulo, id_usuario))
         resultado = cursor.fetchone()
         
         # Si es así se actualiza la cantidad que hay, si no se agrega una fila  
         if resultado:
-            cantidad = resultado[0]+1
-            cursor.execute("UPDATE carrito SET cantidad = %s WHERE id_articulo = %s AND id_usuario = %s", (cantidad, id_articulo, usuario))
+            resultado = resultado[0]+1
+            cantidad= cantidad-1
+            cursor.execute("UPDATE carrito SET cantidad = %s WHERE id_articulo = %s AND id_usuario = %s", (resultado, id_articulo, id_usuario))
+            cursor.execute("UPDATE articulo SET cantidad = %s WHERE id=%s", (cantidad, id_articulo))
+
         else:
-            cursor.execute("SELECT COUNT(*) FROM carrito")
-            id_carrito = cursor.fetchone()[0] + 1
+            cantidad= cantidad-1
             cursor.execute("""
-                INSERT INTO carrito (id_carrito, id_usuario, id_articulo, nombre_articulo, precio_articulo, cantidad) 
-                VALUES (%s, %s, %s, %s, %s, %s)
-            """, (id_carrito, id_usuario, id_articulo, nombre, precio, 1))
+                INSERT INTO carrito (id_usuario, id_articulo, nombre_articulo, precio_articulo, cantidad) 
+                VALUES (%s, %s, %s, %s, %s)
+            """, (id_usuario, id_articulo, nombre, precio, 1))
+            cursor.execute("UPDATE articulo SET cantidad = %s WHERE id=%s", (cantidad, id_articulo))
         conexion.connection.commit()
         cursor.close()
         flash('Producto agregado al carrito correctamente', 'success')
-        return render_template('selectorDeProductos.html')
+        return redirect("/productos")
     except Exception as ex:
         print(f"Error: {str(ex)}")
         return flash("Error al agregar al carrito")

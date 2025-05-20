@@ -10,7 +10,6 @@ CREATE TABLE articulo (
 	precio_actual DOUBLE,
 	descripcion VARCHAR(100),
 	cantidad INT NOT NULL,
-	imagen VARCHAR(255),
 	CONSTRAINT articulo_pk PRIMARY KEY(id, nombre, precio_actual)
 );
 
