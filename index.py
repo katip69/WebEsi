@@ -30,7 +30,6 @@ def load_user(id):
 @app.route("/index")
 def index():
     info = session.get("info")
-    print(info)
     if info == None:
         return redirect('/api/menu')
     else:
