@@ -4,7 +4,7 @@
 
 {% block body %}
 <p class="text-center font-monospace h1 custom-margin-y">Listado de pedidos</p>
-{% for carrito in carritos %}
+{% for pedido in pedidos %}
 <div class="card mb-3 custom-center product">
     <div class="row g-0 col-md-8">
         <div class="card-body">
@@ -15,6 +15,51 @@
             <p class="card-text font-monospace">Estado: {{pedido[4]}}</p>
         </div>
     </div>
+    <button class="btn btn-primary" onclick="verDetalles('{{pedido[0]}}')">Ver detalles</button>
+    <div id="detalles-{{pedido[0]}}" class="mt-4 custom-center" style="display: none;"></div>
 </div>
 {% endfor %}
+
+<script>
+    async function verDetalles(idPedido) {
+        const detallesContainer = document.getElementById("detalles-" + idPedido);
+        if(detallesContainer.style.display =='none'){
+            try {
+                const response = await fetch(`/api/pedidos/${idPedido}`);
+                if (!response.ok) throw new Error("Error en la respuesta del servidor");
+
+                const data = await response.json();
+
+                if (data && data.length > 0) {
+                    detallesContainer.style.display = 'block';
+                    detallesContainer.innerHTML = `
+                        <div class="card mb-3 custom-center product">
+                            <div class="row g-0 col-md-8">
+                                ${data.map(a => `
+                                <div class="card-body">
+                                    <h5 class="card-title font-monospace">Nombre del Juego: ${a[2]}</h5>
+                                    <p class="card-text font-monospace">Cantidad: ${a[3]}</p>
+                                </div>
+                            `).join('')}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                detallesContainer.style.display = 'block';
+                detallesContainer.innerHTML = `
+                    <div class="alert alert-warning font-monospace">Este pedido no tiene artículos.</div>
+                `;
+            }
+        } catch (error) {
+            console.error("Error al obtener detalles del pedido:", error);
+        }
+    } 
+    else{
+        detallesContainer.style.display = 'none';
+    }
+
+    }
+</script>
+
+
 {% endblock %}
