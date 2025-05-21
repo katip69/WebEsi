@@ -26,7 +26,7 @@
             <p class="font-monospace">Cantidad: {{ producto[4] }}</p>
             <input type="hidden" name="cantidad" value="{{ producto[4] }}">
 
-            <button class="btn btn-warning btn-card" type="submit">
+            <button class="btn btn-warning btn-card" href="/api/carrito/delete">
                 <img src="{{ url_for('static', filename='images/carrito.png') }}" class="img-card" />
             </button>
         </div>
