@@ -7,7 +7,6 @@ from flask_login import LoginManager, current_user,login_user,logout_user,login_
 import os
 from models.UserModel import User
 import hashlib
-import base64
 
 app=Flask(__name__)
 
@@ -245,15 +244,19 @@ def agregar_carrito():
 
 @app.route("/api/carrito/vaciar", methods=["DELETE"])
 def vaciar_carrito():
-    try:        
+    try:
+        id_usuario=current_user.id
         cursor = conexion.connection.cursor()
-
-        cursor.execute("DELETE FROM carrito")
-        cursor.fetchall()
-        
+        cursor.execute("SELECT id_articulo,cantidad FROM carrito WHERE id_usuario = %s",(id_usuario,))
+        articulos=cursor.fetchall()
+        for articulo in articulos:
+            id_articulo=articulo[0]
+            cantidad=articulo[1]
+            cursor.execute("UPDATE articulo SET cantidad = cantidad + %s WHERE id = %s", (cantidad, id_articulo))
+        cursor.execute("DELETE FROM carrito WHERE id_usuario = %s",(id_usuario,))    
         conexion.connection.commit()
         cursor.close()
-        return redirect(url_for('productos'))
+        return jsonify({"mensaje": "Artículo borrado correctamente"}), 200
     except Exception as ex:
         print(f"Error: {str(ex)}")
         return flash("Error al vaciar el carrito")

@@ -5,30 +5,69 @@
 {% block body %}
 
 {% if carritos == 'vacio' %}
-<p class="text-center font-monospace h1 custom-margin-y">Carrito {{carritos}}</p>
+<p class="text-center font-monospace h1 custom-margin-y">Carrito vacío</p>
 {% else %}
-<p class="text-center font-monospace h1 custom-margin-y">Carritos</p>
+<p class="text-center font-monospace h1 custom-margin-y">Carrito</p>
+
 {% for carrito in carritos %}
-<div class="card mb-3 custom-center product">
-    <div class="row g-0">
-        <div class="col-md-4">
-            <img src="..." class="img-fluid rounded-start">
-        </div>
-        <div class="col-md-8">
-            <div class="card-body">
-                <h5 class="card-title font-monospace">Nombre: {{carrito[2]}}</h5>
-                <p class="card-text font-monospace">Precio: {{carrito[3]}}</p>
-                <p class="card-text font-monospace">Cantidad: {{carrito[4]}}</p>
+<form method="DELETE" action="/api/carrito/vaciar">
+    <div class="card mb-3 custom-center product">
+        <div class="row g-0">
+            <div class="col-md-8">
+                <div class="card-body">
+                    <h5 class="card-title font-monospace">Nombre: {{ carrito[2] }}</h5>
+                    <p class="card-text font-monospace">Precio: {{ carrito[3] }}</p>
+                    <p class="card-text font-monospace">Cantidad: {{ carrito[4] }}</p>
+
+                    <!-- Campos ocultos para el backend -->
+                    <input type="hidden" name="id_articulo" value="{{ carrito[1] }}">
+                    <input type="hidden" name="id_usuario" value="{{ carrito[0] }}">
+                    <input type="hidden" name="cantidad" value="{{ carrito[4] }}">
+                </div>
             </div>
         </div>
     </div>
-    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-        <button class="btn btn-warning btn-card" type="button"><img src="./static/images/papelera.png" class="img-card"/></button>
-    </div>
-</div>
-<div class="d-grid gap-2 col-2 mx-auto">
-    <button class="btn btn-primary" type="button">Confirmar compra</button>
-</div>
+</form>
+ <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <!--<button class="btn btn-warning btn-card"><a href="{{url_for('vaciar_carrito')}}" >borrar</a> -->
+                <!--<img src="{{ url_for('static', filename='images/papelera.png') }}" class="img-card" />-->
+            
+
+            <button class="btn btn-warning btn-card" onclick="borrarArticulo()">borrar</button>
+
+        </div>
 {% endfor %}
+
+<!-- Confirmar compra -->
+<form method="POST" action="/api/checkout">
+    <div class="d-grid gap-2 col-2 mx-auto">
+        <button class="btn btn-primary" type="submit">Confirmar compra</button>
+    </div>
+</form>
+
+<script>
+function borrarArticulo() {
+    fetch('/api/carrito/vaciar', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+        })
+    })
+    .then(response => {
+        if (response.ok) {
+            window.location.reload();  // Recarga la página
+        } else {
+            alert('Error al borrar');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error en la solicitud');
+    });
+}
+</script>
+
 {% endif %}
 {% endblock %}
