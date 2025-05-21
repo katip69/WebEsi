@@ -98,7 +98,6 @@ def productos():
     if articulos == None:
         return redirect('/api/productos')
     else:
-        print("carga coño")
         return render_template('selectorDeProductos.html',articulos=articulos)    
 
 
@@ -152,14 +151,14 @@ def listado():
         print(ex)
         return flash("Error al obtener los pedidos")
     
-@app.route("/api/pedidos/<id_articulo>", methods=["GET"])
-def getArticuloPedido(id_articulo):
+@app.route("/api/pedidos/<id>", methods=["GET"])
+def getArticuloPedido(id):
     try:
         cursor = conexion.connection.cursor()
-        cursor.execute("SELECT * FROM pedido WHERE id_articulo = %s", (id_articulo,))
-        articulo = cursor.fetchall()
+        cursor.execute("SELECT * FROM detalle_pedido WHERE id_pedido = %s", (id,))
+        articulos = cursor.fetchall()
         cursor.close()
-        return render_template('listadoDePedidos.html', articulo=articulo)
+        return jsonify (articulos), 200
     except Exception as ex:
         print(ex)
         return flash("Error al obtener el pedido")
@@ -243,16 +242,17 @@ def agregar_carrito():
         return flash("Error al agregar al carrito")
 
 @app.route("/api/carrito/vaciar", methods=["DELETE"])
-def vaciar_carrito():
+def vaciar_carrito(compra):
     try:
         id_usuario=current_user.id
         cursor = conexion.connection.cursor()
-        cursor.execute("SELECT id_articulo,cantidad FROM carrito WHERE id_usuario = %s",(id_usuario,))
-        articulos=cursor.fetchall()
-        for articulo in articulos:
-            id_articulo=articulo[0]
-            cantidad=articulo[1]
-            cursor.execute("UPDATE articulo SET cantidad = cantidad + %s WHERE id = %s", (cantidad, id_articulo))
+        if compra is None:
+            cursor.execute("SELECT id_articulo,cantidad FROM carrito WHERE id_usuario = %s",(id_usuario,))
+            articulos=cursor.fetchall()
+            for articulo in articulos:
+                id_articulo=articulo[0]
+                cantidad=articulo[1]
+                cursor.execute("UPDATE articulo SET cantidad = cantidad + %s WHERE id = %s", (cantidad, id_articulo))
         cursor.execute("DELETE FROM carrito WHERE id_usuario = %s",(id_usuario,))    
         conexion.connection.commit()
         cursor.close()
@@ -265,28 +265,30 @@ def vaciar_carrito():
 def procesar_compra():
     try:
         cursor = conexion.connection.cursor()
-        
         # Se obtiene los datos del carrito a partir de su id
-        cursor.execute("SELECT * FROM carrito")
+        cursor.execute("SELECT * FROM carrito WHERE id_usuario = %s",(current_user.id,))
         carrito = cursor.fetchall()
         
         if carrito:
             fecha_pedido = datetime.now()
             fecha_entrega = fecha_pedido + timedelta(days=3)
+            cursor.execute("INSERT INTO pedido (id_usuario, fecha_pedido, fecha_entrega, estado) VALUES (%s, %s, %s,%s)",(current_user.id,fecha_pedido,fecha_entrega,'procesando',))
+            conexion.connection.commit()
+            cursor.execute("SELECT id FROM pedido WHERE id_usuario = 1 ORDER BY fecha_pedido DESC LIMIT 1;")
+            id_pedido=cursor.fetchone()
             for item in carrito:
                 cursor.execute("""
-                    INSERT INTO pedido 
-                    (id_usuario, id_articulo, nombre_articulo, fecha_pedido, fecha_entrega, estado)
-                    VALUES (%s, %s, %s, %s, %s, %s)
+                    INSERT INTO  detalle_pedido
+                    (id_pedido, id_articulo, nombre_articulo,cantidad)
+                    VALUES (%s, %s, %s, %s)
                 """, (
-                    current_user.id,
+                    id_pedido,
+                    item[1],
                     item[2],
-                    item[3],
-                    fecha_pedido.date(),
-                    fecha_entrega.date(),
-                    'procesando'
+                    item[4]
                 ))
-            vaciar_carrito()
+            conexion.connection.commit()
+            vaciar_carrito("comprar")
             time.sleep(3)
             return redirect(url_for('productos'))
         else:

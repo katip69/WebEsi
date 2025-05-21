@@ -18,25 +18,16 @@
                     <h5 class="card-title font-monospace">Nombre: {{ carrito[2] }}</h5>
                     <p class="card-text font-monospace">Precio: {{ carrito[3] }}</p>
                     <p class="card-text font-monospace">Cantidad: {{ carrito[4] }}</p>
-
-                    <!-- Campos ocultos para el backend -->
-                    <input type="hidden" name="id_articulo" value="{{ carrito[1] }}">
-                    <input type="hidden" name="id_usuario" value="{{ carrito[0] }}">
-                    <input type="hidden" name="cantidad" value="{{ carrito[4] }}">
                 </div>
             </div>
         </div>
     </div>
 </form>
- <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-            <!--<button class="btn btn-warning btn-card"><a href="{{url_for('vaciar_carrito')}}" >borrar</a> -->
-                <!--<img src="{{ url_for('static', filename='images/papelera.png') }}" class="img-card" />-->
-            
-
-            <button class="btn btn-warning btn-card" onclick="borrarArticulo()">borrar</button>
-
-        </div>
 {% endfor %}
+
+<div class="d-grid gap-2 col-2 mx-auto">
+    <button class="btn btn-warning btn-card" onclick="borrarArticulo()"><img src="{{ url_for('static', filename='images/papelera.png') }}" class="img-card" /></button>
+</div>
 
 <!-- Confirmar compra -->
 <form method="POST" action="/api/checkout">
