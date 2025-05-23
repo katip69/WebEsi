@@ -18,7 +18,7 @@ class User(UserMixin):
             cursor.execute(sql, (id,))
             row = cursor.fetchone()
             if row != None:
-                return User(row[0], row[1], row[2],None,row[3])
+                return User(row[0], row[1], row[2],None,row[4])
             else:
                 return None
         except Exception as ex:

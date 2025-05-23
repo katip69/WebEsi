@@ -44,6 +44,7 @@ function borrarArticulo() {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
+            compra: true
         })
     })
     .then(response => {
