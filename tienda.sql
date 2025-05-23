@@ -9,7 +9,9 @@ CREATE TABLE articulo (
 	nombre VARCHAR(20) NOT NULL,
 	precio_actual DOUBLE NOT NULL,
 	descripcion VARCHAR(100),
-	cantidad INT NOT NULL
+	cantidad INT NOT NULL,
+	puntuacion INT NOT NULL 
+	
 );
 
 -- Crear tabla usuario con id autoincremental como clave primaria

@@ -114,17 +114,53 @@ def get_productos():
         return flash("Error al obtener los productos")
 
 
-@app.route("/api/productos/<id_articulo>", methods=["GET"])
-def getProducto(id_articulo):
+@app.route("/api/productos/<id>", methods=["GET"])
+def getProductoPedido(id):
     try:
         cursor = conexion.connection.cursor()
-        cursor.execute("SELECT * FROM articulo WHERE id_articulo = %s", (id_articulo,))
+        cursor.execute("SELECT * FROM articulo WHERE id = %s", (id,))
         articulo = cursor.fetchall()
         cursor.close()
-        return render_template('selectorDeProductos.html', articulo=articulo)
+        return jsonify(articulo), 200
     except Exception as ex:
         print(ex)
-        return flash("Error al obtener el producto")
+        return jsonify({"error": "Error al obtener el producto"}), 500
+
+@app.route("/api/productos/<id>", methods=["PUT"])
+def actualizaProducto(id):
+    if current_user.id:
+        producto = request.get_json()
+        cursor = conexion.connection.cursor()
+        try:
+            cursor.execute("UPDATE articulo SET nombre = %s, precio_actual = %s, descripcion = %s, cantidad = %s, puntuacion = %s WHERE id = %s",(producto.get("nombre"),producto.get("precio"), producto.get("descripcion"), producto.get("stock"), producto.get("puntuacion"),id,))
+            conexion.connection.commit()
+            return jsonify("Actualizacion correcta"), 200
+        except Exception as ex:
+            return jsonify('Error en la actualizacion del `${valor}`'), 500
+    else:
+        return jsonify("No eres administrador"), 500
+
+
+@app.route("/api/productos/<int:id>", methods=["PATCH"])
+def actualizaElemento(id):
+    if current_user.admin==1:
+        cursor = conexion.connection.cursor()
+        data = request.get_json() 
+        cambio = data.get("update")
+        valor = data.get("valor")
+        try:
+            if cambio=='Precio':
+                cursor.execute("UPDATE articulo SET precio_actual = %s WHERE id = %s",(valor,id))
+                conexion.connection.commit()
+                return jsonify("Precio actualizado con exito"),200
+            elif cambio == 'Stock':
+                cursor.execute("UPDATE articulo SET cantidad = %s WHERE id = %s",(valor,id))
+                conexion.connection.commit()
+                return jsonify("Precio actualizado con exito"),200
+        except Exception as ex:
+            return jsonify('Error en la actualizacion del `${valor}`'), 500
+    else:
+        return jsonify('No eres administrador '), 500
 
 @app.route("/pedidos")
 @login_required
@@ -141,8 +177,9 @@ def pedidos():
 @login_required
 def listado():
     try:
+        id_usuario=current_user.id
         cursor = conexion.connection.cursor()
-        cursor.execute("SELECT * FROM pedido")
+        cursor.execute("SELECT * FROM pedido WHERE id_usuario = %s",(id_usuario,))
         pedidos = cursor.fetchall()
         cursor.close()
         session['pedidos']=pedidos
@@ -242,11 +279,14 @@ def agregar_carrito():
         return flash("Error al agregar al carrito")
 
 @app.route("/api/carrito/vaciar", methods=["DELETE"])
-def vaciar_carrito(compra):
+def vaciar_carrito():
+
+    id_usuario=current_user.id
+    data = request.get_json(silent=True) or {}
+    compra = data.get("compra")
+    cursor = conexion.connection.cursor()
     try:
-        id_usuario=current_user.id
-        cursor = conexion.connection.cursor()
-        if compra is None:
+        if compra is True:
             cursor.execute("SELECT id_articulo,cantidad FROM carrito WHERE id_usuario = %s",(id_usuario,))
             articulos=cursor.fetchall()
             for articulo in articulos:
@@ -288,7 +328,7 @@ def procesar_compra():
                     item[4]
                 ))
             conexion.connection.commit()
-            vaciar_carrito("comprar")
+            vaciar_carrito()
             time.sleep(3)
             return redirect(url_for('productos'))
         else:

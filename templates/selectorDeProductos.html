@@ -6,32 +6,222 @@
 <p class="text-center font-monospace h1 custom-margin-y">Selector de productos</p>
 
 {% for producto in articulos %}
-<form method="POST" action="/api/carrito/agregar">
-    <div class="card mb-3 custom-center product">
+<div class="card mb-3 custom-center product">
+    {% if current_user.id == 1 %}
+    <button id="cambiarProducto" onclick="reemplazarProducto('{{producto[0]}}')" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2">
+        Modificar producto
+    </button>
+    {% endif %}
+    <form method="POST" action="/api/carrito/agregar">
         <div class="row g-0 col-md-8">
             <div class="card-body">
-                <h5 class="card-title font-monospace">Nombre: {{ producto[1] }}</h5>
-                <p class="card-text font-monospace">Precio: {{ producto[2] }}</p>
-                <p class="card-text font-monospace">Descripcion: {{ producto[3] }}</p>
-
-                <!-- Campos ocultos para enviar al backend -->
+                <h5 class="card-title font-monospace" id="nombre-{{producto[0]}}">Nombre: {{ producto[1] }}</h5>
+                <p class="card-text font-monospace" id="precio-{{producto[0]}}">Precio: {{ producto[2] }}</p>
+                <p class="font-monospace mb-0" id="stock-{{producto[0]}}">Cantidad: {{ producto[4] }}</p>
+                <input type="hidden" name="cantidad" value="{{ producto[4] }}">
                 <input type="hidden" name="id" value="{{ producto[0] }}">
                 <input type="hidden" name="nombre" value="{{ producto[1] }}">
                 <input type="hidden" name="precio" value="{{ producto[2] }}">
                 <input type="hidden" name="descripcion" value="{{ producto[3] }}">
             </div>
         </div>
-
-        <div style="margin-left: 10px">
-            <p class="font-monospace">Cantidad: {{ producto[4] }}</p>
-            <input type="hidden" name="cantidad" value="{{ producto[4] }}">
-
-            <button class="btn btn-warning btn-card" href="/api/carrito/delete">
-                <img src="{{ url_for('static', filename='images/carrito.png') }}" class="img-card" />
-            </button>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 15px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <button type="submit" class="btn btn-warning btn-card">
+                    <img src="{{ url_for('static', filename='images/carrito.png') }}" class="img-card" />
+                </button>
+            </div>
         </div>
+        <div id="info-{{producto[0]}}" class="mt-4 custom-center" style="display: none;"></div>
+    </form>
+
+    
+    <!-- Botones en fila -->
+    <div class="d-flex justify-content-center gap-2 mb-3">
+        
+        <button onclick="Detalle('{{producto[0]}}')" class="btn btn-info btn-sm">Ver detalles</button>
+        {% if current_user.admin == 1 %}
+        <button onclick="actualizarElemento('{{ producto[0] }}','Precio')" class="btn btn-success btn-sm">Cambiar precio</button>
+
+        <button onclick="actualizarElemento('{{ producto[0] }}','Stock')" class="btn btn-secondary btn-sm">Cambiar stock</button>
+        {% endif %}
     </div>
-</form>
+</div>
+
+<div class="modal fade" id="editarProductoModal-{{producto[0]}}" tabindex="-1" aria-labelledby="editarProductoLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content font-monospace">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editarProductoLabel">Modificar producto</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formEditarProducto">
+          <input type="hidden" id="productoId">
+          <div class="mb-3">
+            <label for="productoNombre" class="form-label">Nombre</label>
+            <input type="text" class="form-control" id="productoNombre" value="{{producto[1]}}" required>
+          </div>
+          <div class="mb-3">
+            <label for="productoPrecio" class="form-label">Precio</label>
+            <input type="number" class="form-control" id="productoPrecio" value="{{producto[2]}}" required>
+          </div>
+          <div class="mb-3">
+            <label for="productoStock" class="form-label">Descripción</label>
+            <input type="text" class="form-control" id="productoDescripcion" value="{{producto[3]}}" required>
+          </div>
+          <div class="mb-3">
+            <label for="productoStock" class="form-label">Stock</label>
+            <input type="number" class="form-control" id="productoStock" value="{{producto[4]}}" required>
+          </div>
+          <div class="mb-3">
+            <label for="productoStock" class="form-label">Puntuacion</label>
+            <input type="number" class="form-control" id="productoPuntuacion" value="{{producto[5]}}" required>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="guardarCambios('{{producto[0]}}')">Guardar cambios</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endfor %}
 
+<script>
+    async function Detalle(id) {
+        const detallesContainer = document.getElementById("info-" + id);
+  
+        if(detallesContainer.style.display =='none'){
+            try {
+                const response = await fetch(`/api/productos/${id}`);
+                if (!response.ok) throw new Error("Error en la respuesta del servidor");
+
+                const data = await response.json();
+                if (data && data.length > 0) {
+                    detallesContainer.style.display = 'block';
+                    detallesContainer.innerHTML = `
+                        <div class="card mb-3 custom-center product">
+                            <div class="row g-0 col-md-8">
+                                ${data.map(a => `
+                                <div class="card-body">
+                                    <h5 class="card-title font-monospace">Descripcion: ${a[3]}</h5>
+                                    <p class="card-text font-monospace">Valoracion: ${a[5]}</p>
+                                </div>
+                            `).join('')}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                detallesContainer.style.display = 'block';
+                detallesContainer.innerHTML = `
+                    <div class="alert alert-warning font-monospace">Este pedido no tiene artículos.</div>
+                `;
+            }
+        } catch (error) {
+            console.error("Error al obtener detalles del pedido:", error);
+        }
+    } 
+    else{
+        detallesContainer.style.display = 'none';
+    }
+
+    }
+
+    async function actualizarElemento(id, cambio) {
+    try {
+        const valor = prompt(`Introduce el nuevo valor para ${cambio.toLowerCase()}:`);
+        // Validar entrada
+        if (valor === null || valor.trim() === '') {
+            alert("No se ingresó ningún valor.");
+            return;
+        }
+
+        const response = await fetch(`/api/productos/${id}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                update: cambio, 
+                valor: valor
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error("Error al actualizar el producto");
+        }
+        if (response.status == 200){
+            if(cambio == 'Precio'){
+                const html = document.getElementById("precio-" + id)
+                html.textContent = "Precio: " + parseFloat(valor)
+            }
+            else{
+                const html = document.getElementById("stock-" + id)
+                html.textContent = "Cantidad: " + parseInt(valor)
+            }
+        }
+        const resultado = await response.json();
+        console.log("Producto actualizado:", resultado);
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+function reemplazarProducto(id){
+    const modal = new bootstrap.Modal(document.getElementById('editarProductoModal-'+ id));
+    modal.show();
+}
+
+
+async function guardarCambios(id) {
+    const nombre = document.getElementById('productoNombre').value;
+    const precio = parseFloat(document.getElementById('productoPrecio').value);
+    const descripcion = document.getElementById('productoDescripcion').value;
+    const stock = parseInt(document.getElementById('productoStock').value);
+    const puntuacion = parseInt(document.getElementById('productoPuntuacion').value);
+
+    const nuevoProducto = {
+        nombre: nombre,
+        precio: precio,
+        descripcion: descripcion,
+        stock: stock,
+        puntuacion: puntuacion
+    };
+
+    try {
+        const response = await fetch(`/api/productos/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(nuevoProducto)
+        });
+
+        if (!response.ok) {
+            throw new Error("Error al reemplazar el producto");
+        }
+
+        const resultado = await response.json();
+        console.log("Producto reemplazado:", resultado);
+
+        //  Cierra el modal después de guardar exitosamente
+        const modal = bootstrap.Modal.getInstance(document.getElementById('editarProductoModal-' + id));
+        modal.hide();
+        if(response.status == 200){
+            let html = document.getElementById("precio-" + id)
+            html.textContent = "Precio: " + parseFloat(nuevoProducto.precio)
+            html = document.getElementById("stock-" + id)
+            html.textContent = "Cantidad: " + parseInt(nuevoProducto.stock)
+            html = document.getElementById("nombre-" + id)
+            html.textContent = "Nombre: " + nuevoProducto.nombre
+        }
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+</script>
 {% endblock %}
